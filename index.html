@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Challenge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="tutorial.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="game-title">
+            <h1>Math Challenge</h1>
+            <div class="settings-icon" id="settings-icon">
+                <i class="fas fa-cog"></i>
+            </div>
+        </div>
+        
+        <div class="game-menu" id="game-menu">
+            <h2>Select Difficulty</h2>
+            <div class="difficulty-buttons">
+                <button class="btn" id="easy">Easy</button>
+                <button class="btn" id="medium">Medium</button>
+                <button class="btn" id="hard">Hard</button>
+            </div>
+            <div class="game-description">
+                <p>Challenge your math skills with increasingly difficult problems. Earn points, unlock achievements, and compete for high scores!</p>
+            </div>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="game-info">
+                <div class="score">Score: <span id="score">0</span></div>
+                <div class="timer">Time: <span id="timer">60</span>s</div>
+                <div class="level">Level: <span id="level">1</span></div>
+            </div>
+            
+            <div class="power-ups">
+                <button class="power-up-btn" id="time-boost" title="+15 seconds">
+                    <i class="fas fa-clock"></i>
+                </button>
+                <button class="power-up-btn" id="point-multiplier" title="2x points for 15 seconds">
+                    <i class="fas fa-star"></i>
+                </button>
+                <button class="power-up-btn" id="skip-problem" title="Skip current problem">
+                    <i class="fas fa-forward"></i>
+                </button>
+            </div>
+            
+            <div class="problem-container">
+                <div id="problem" class="problem">8 × 7 = ?</div>
+                <input type="number" id="answer" class="answer-input" placeholder="Your answer" autofocus>
+                <button id="submit" class="btn submit-btn">Submit</button>
+            </div>
+            
+            <div class="streak-container">
+                <div class="streak">Streak: <span id="streak">0</span></div>
+                <div class="streak-bar">
+                    <div id="streak-progress" class="streak-progress"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-over" id="game-over">
+            <h2>Game Over!</h2>
+            <div class="final-score">Your Score: <span id="final-score">0</span></div>
+            <div class="high-score">High Score: <span id="high-score">0</span></div>
+            <div class="achievements-summary" id="achievements-summary">
+                <h3>Achievements</h3>
+                <div class="achievements-list" id="achievements-list">
+                    <!-- Achievements will be added here dynamically -->
+                </div>
+            </div>
+            <button id="play-again" class="btn">Play Again</button>
+        </div>
+        
+        <div class="settings-panel" id="settings-panel">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button class="close-btn" id="close-settings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label for="sound-toggle">Sound Effects</label>
+                    <label class="switch">
+                        <input type="checkbox" id="sound-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <button class="btn" id="reset-progress">Reset Progress</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js" type="module"></script>
+    <script src="powerups.js" type="module"></script>
+    <script src="tutorial.js" type="module"></script>
+</body>
+</html>

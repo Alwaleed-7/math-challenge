@@ -118,4 +118,4 @@ Contributions are welcome! Feel free to open issues and submit pull requests.
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by Alwaleed

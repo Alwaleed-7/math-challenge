@@ -190,11 +190,35 @@ const powerUpButtons = {
     'skip-problem': document.getElementById('skip-problem')
 };
 
-// Initialize power-up buttons
-Object.keys(powerUpButtons).forEach(id => {
-    powerUpButtons[id].title = `${id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}`;
-    powerUpButtons[id].addEventListener('click', () => usePowerUp(id));
-});
+// Initialize power-up buttons and reset power-up states
+function initializePowerUps() {
+    // Reset power-up counts
+    powerUpCounts = {
+        'time-boost': 3,
+        'point-multiplier': 2,
+        'skip-problem': 3
+    };
+
+    // Reset cooldown timers
+    powerUpCooldownTimers = {
+        'time-boost': 0,
+        'point-multiplier': 0,
+        'skip-problem': 0
+    };
+
+    // Reset used power-ups tracking
+    usedPowerUps = {};
+
+    // Initialize buttons
+    Object.keys(powerUpButtons).forEach(id => {
+        powerUpButtons[id].title = `${id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}`;
+        powerUpButtons[id].disabled = false;
+        powerUpButtons[id].addEventListener('click', () => usePowerUp(id));
+    });
+}
+
+// Call initialization when starting a new game
+initializePowerUps();
 
 
 // Difficulty settings

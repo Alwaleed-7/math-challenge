@@ -190,59 +190,31 @@ const powerUpButtons = {
     'skip-problem': document.getElementById('skip-problem')
 };
 
-// Initialize power-up buttons and reset power-up states
-function initializePowerUps() {
-    // Reset power-up counts
-    powerUpCounts = {
-        'time-boost': 3,
-        'point-multiplier': 2,
-        'skip-problem': 3
-    };
-
-    // Reset cooldown timers
-    powerUpCooldownTimers = {
-        'time-boost': 0,
-        'point-multiplier': 0,
-        'skip-problem': 0
-    };
-
-    // Reset used power-ups tracking
-    usedPowerUps = {};
-
-    // Initialize buttons
-    Object.keys(powerUpButtons).forEach(id => {
-        powerUpButtons[id].title = `${id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}`;
-        powerUpButtons[id].disabled = false;
-        powerUpButtons[id].addEventListener('click', () => usePowerUp(id));
-    });
-}
-
-// Call initialization when starting a new game
-initializePowerUps();
-
-
 // Difficulty settings
 const difficultySettings = {
     easy: {
-        maxNumber: 12,
-        operations: ['+', '-', '×'],
-        timeBonus: 3,
+        maxNumber: 10,
+        operations: ['+', '-'],
+        minNumber: 1,
+        timeBonus: 5,
         scoreMultiplier: 1,
-        initialTime: 90
+        initialTime: 120
     },
     medium: {
         maxNumber: 15,
-        operations: ['+', '-', '×', '÷'],
-        timeBonus: 2,
+        operations: ['+', '-'],
+        minNumber: 1,
+        timeBonus: 3,
         scoreMultiplier: 2,
-        initialTime: 60
+        initialTime: 90
     },
     hard: {
         maxNumber: 20,
-        operations: ['+', '-', '×', '÷', '^'],
-        timeBonus: 1,
+        operations: ['+', '-', '×'],
+        minNumber: 2,
+        timeBonus: 2,
         scoreMultiplier: 3,
-        initialTime: 45
+        initialTime: 60
     }
 };
 
@@ -265,22 +237,29 @@ function generateProblem() {
     const settings = difficultySettings[difficulty];
     let availableOperations;
     
-    // Progressive operations based on level
-    if (level <= 2) {
-        // Level 1-2: Only addition
-        availableOperations = ["+"];
-    } else if (level <= 5) {
-        // Level 3-5: Addition and subtraction
-        availableOperations = ["+", "-"];
-    } else if (level <= 7) {
-        // Level 6-7: Multiplication only
-        availableOperations = ["×"];
-    } else if (level <= 10) {
-        // Level 8-10: All basic operations (addition, subtraction, multiplication, division)
-        availableOperations = ["+", "-", "×", "÷"];
-    } else {
-        // Level 11+: All operations including powers
-        availableOperations = ["+", "-", "×", "÷", "^"];
+    // Set operations based on difficulty and level
+    if (difficulty === 'easy') {
+        if (level <= 3) {
+            availableOperations = ["+"]; // Start with addition only
+        } else {
+            availableOperations = ["+", "-"]; // Add subtraction after level 3
+        }
+    } else if (difficulty === 'medium') {
+        if (level <= 2) {
+            availableOperations = ["+", "-"];
+        } else if (level <= 5) {
+            availableOperations = ["+", "-", "×"];
+        } else {
+            availableOperations = ["+", "-", "×", "÷"];
+        }
+    } else { // hard
+        if (level <= 3) {
+            availableOperations = ["+", "-", "×"];
+        } else if (level <= 7) {
+            availableOperations = ["+", "-", "×", "÷"];
+        } else {
+            availableOperations = ["+", "-", "×", "÷", "^"];
+        }
     }
     
     const operation = availableOperations[Math.floor(Math.random() * availableOperations.length)];
@@ -321,15 +300,8 @@ function startGame(selectedDifficulty) {
     // Set current high score based on selected difficulty
     highScore = highScores[difficulty];
     
-    // Reset power-up counts
-    powerUpCounts = {
-        'time-boost': 3,
-        'point-multiplier': 2,
-        'skip-problem': 3
-    };
-    
-    // Reset used power-ups tracking
-    usedPowerUps = {};
+    // Initialize power-ups
+    initializePowerUps();
     
     // Reset current game achievements
     currentGameAchievements = [];
@@ -592,59 +564,151 @@ function updateAchievementsList() {
     });
 }
 
-// Initialize power-up buttons
-Object.keys(powerUpButtons).forEach(id => {
-    const button = powerUpButtons[id];
-    button.addEventListener('click', () => usePowerUp(id));
-});
+// Initialize power-up buttons and reset power-up states
+function initializePowerUps() {
+    // Reset power-up counts
+    powerUpCounts = {
+        'time-boost': 3,
+        'point-multiplier': 2,
+        'skip-problem': 3
+    };
+
+    // Reset cooldown timers
+    powerUpCooldownTimers = {
+        'time-boost': 0,
+        'point-multiplier': 0,
+        'skip-problem': 0
+    };
+
+    // Reset used power-ups tracking
+    usedPowerUps = {};
+
+    // Reset active power-up state
+    activePowerUp = null;
+    if (powerUpTimer) {
+        clearInterval(powerUpTimer);
+        powerUpTimer = null;
+    }
+
+    // Initialize power-up buttons
+    Object.keys(powerUpButtons).forEach(id => {
+        const button = powerUpButtons[id];
+        // Update button display
+        button.innerHTML = `<i class="fas fa-${getIconForPowerUp(id)}"></i>`;
+        button.title = `${id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}`;
+        button.disabled = false;
+        
+        // Remove existing event listeners and add new one
+        button.replaceWith(button.cloneNode(true));
+        powerUpButtons[id] = document.getElementById(id);
+        powerUpButtons[id].addEventListener('click', () => usePowerUp(id));
+    });
+}
 
 // Function to use power-up
 function usePowerUp(id) {
-    if (powerUpCooldownTimers[id] > 0 || powerUpCounts[id] <= 0) return;
+    // Check if power-up is available
+    if (powerUpCounts[id] <= 0 || powerUpCooldownTimers[id] > 0) {
+        return;
+    }
+
+    // Update button display
+    const button = powerUpButtons[id];
+    button.innerHTML = `<i class="fas fa-${getIconForPowerUp(id)}"></i>`;
+    button.title = `${id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}`;
+    button.disabled = false;
     
     // Decrease power-up count
     powerUpCounts[id]--;
-    updatePowerUpCounts();
-    
-    // Track for achievement
-    usedPowerUps[id] = true;
-    if (Object.keys(usedPowerUps).length === Object.keys(powerUpButtons).length && !achievements['power_user']) {
-        unlockAchievement('power_user');
-    }
-    
+
+    // Play power-up sound
     playSound('powerUp');
-    
+
+    // Start cooldown
+    powerUpCooldownTimers[id] = powerUpCooldowns[id];
+    button.disabled = true;
+    button.classList.add('disabled');
+
+    // Start cooldown timer
+    const cooldownInterval = setInterval(() => {
+        powerUpCooldownTimers[id]--;
+        button.title = `Cooldown: ${powerUpCooldownTimers[id]}s`;
+
+        if (powerUpCooldownTimers[id] <= 0) {
+            clearInterval(cooldownInterval);
+            button.disabled = false;
+            button.classList.remove('disabled');
+            button.title = id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+    }, 1000);
+
+    // Apply power-up effect
     switch(id) {
         case 'time-boost':
             timeLeft += 15;
+            timerElement.textContent = timeLeft;
             break;
+
         case 'point-multiplier':
-            activePowerUp = id;
+            if (activePowerUp === 'point-multiplier') {
+                clearTimeout(powerUpTimer);
+            }
+            activePowerUp = 'point-multiplier';
             powerUpTimeLeft = 15;
-            if (powerUpTimer) clearInterval(powerUpTimer);
+
+            // Create or update status display
+            let statusDisplay = button.querySelector('.multiplier-status');
+            if (!statusDisplay) {
+                statusDisplay = document.createElement('div');
+                statusDisplay.className = 'multiplier-status';
+                button.appendChild(statusDisplay);
+            }
+
+            // Update status display
+            const updateMultiplierStatus = () => {
+                if (powerUpTimeLeft > 0) {
+                    statusDisplay.textContent = powerUpTimeLeft;
+                    statusDisplay.style.display = 'block';
+                } else {
+                    statusDisplay.style.display = 'none';
+                }
+            };
+
+            // Start power-up timer
             powerUpTimer = setInterval(() => {
                 powerUpTimeLeft--;
+                updateMultiplierStatus();
                 if (powerUpTimeLeft <= 0) {
                     clearInterval(powerUpTimer);
                     activePowerUp = null;
+                    button.title = 'Point Multiplier';
                 }
             }, 1000);
+
+            // Initial status display
+            updateMultiplierStatus();
             break;
+
         case 'skip-problem':
             updateProblem();
             break;
     }
+
+    // Track power-up usage for achievement
+    usedPowerUps[id] = true;
     
-    // Set cooldown
-    powerUpCooldownTimers[id] = powerUpCooldowns[id];
-    powerUpButtons[id].classList.add('cooldown');
-    const cooldownInterval = setInterval(() => {
-        powerUpCooldownTimers[id]--;
-        if (powerUpCooldownTimers[id] <= 0) {
-            clearInterval(cooldownInterval);
-            powerUpButtons[id].classList.remove('cooldown');
-        }
-    }, 1000);
-    
-    updateUI();
+    // Check if all power-ups have been used
+    if (Object.keys(usedPowerUps).length === 3) {
+        unlockAchievement('power_user');
+    }
+}
+
+// Helper function to get the appropriate icon
+function getIconForPowerUp(powerUpId) {
+    switch(powerUpId) {
+        case 'time-boost': return 'clock';
+        case 'point-multiplier': return 'star';
+        case 'skip-problem': return 'forward';
+        default: return '';
+    }
 }

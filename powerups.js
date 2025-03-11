@@ -5,6 +5,20 @@ function usePowerUp(id) {
         return;
     }
 
+    // Update button display
+    const button = powerUpButtons[id];
+    button.innerHTML = `<i class="fas fa-${getIconForPowerUp(id)}"></i> (${powerUpCounts[id] - 1})`;
+
+    // Helper function to get the appropriate icon
+    function getIconForPowerUp(powerUpId) {
+        switch(powerUpId) {
+            case 'time-boost': return 'clock';
+            case 'point-multiplier': return 'star';
+            case 'skip-problem': return 'forward';
+            default: return '';
+        }
+    }
+
     // Decrease power-up count
     powerUpCounts[id]--;
 

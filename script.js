@@ -198,7 +198,7 @@ const difficultySettings = {
         minNumber: 1,
         timeBonus: 5,
         scoreMultiplier: 1,
-        initialTime: 120
+        initialTime: 40
     },
     medium: {
         maxNumber: 15,
@@ -274,7 +274,15 @@ function generateProblem() {
     } else {
         switch(operation) {
             case '+': answer = num1 + num2; break;
-            case '-': answer = num1 - num2; break;
+            case '-': 
+                // Ensure non-negative results in easy mode
+                if (difficulty === 'easy') {
+                    if (num1 < num2) {
+                        [num1, num2] = [num2, num1]; // Swap numbers if needed
+                    }
+                }
+                answer = num1 - num2; 
+                break;
             case '×': answer = num1 * num2; break;
             case '^': 
                 num2 = Math.min(3, num2); // Limit exponents
